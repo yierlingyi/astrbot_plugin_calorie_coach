@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    background: #eef2f6;
+    padding: 24px;
+    color: #23303c;
+  }
+  .card {
+    width: 760px;
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 26px 28px 20px;
+    box-shadow: 0 18px 40px rgba(35, 48, 60, 0.12);
+  }
+  .head { display: flex; align-items: flex-end; justify-content: space-between; }
+  .title { font-size: 26px; font-weight: 800; letter-spacing: 0.5px; }
+  .title small { display: block; font-size: 13px; font-weight: 500; color: #8494a4; margin-top: 6px; }
+  .chips { display: flex; gap: 10px; }
+  .chip {
+    background: #f5f8fb;
+    border-radius: 14px;
+    padding: 10px 14px;
+    min-width: 96px;
+    text-align: center;
+  }
+  .chip .num { font-size: 20px; font-weight: 800; color: #1f6f52; }
+  .chip .num.warn { color: #c47b1d; }
+  .chip .lbl { font-size: 11px; color: #8494a4; margin-top: 3px; }
+
+  .grid-head { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin: 22px 0 8px; }
+  .grid-head div { text-align: center; font-size: 12px; color: #98a6b5; font-weight: 600; }
+  .grid-head div.we { color: #b0a08a; }
+
+  .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+  .cell {
+    height: 92px;
+    border-radius: 14px;
+    background: #f7f9fb;
+    padding: 8px 9px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cell.empty { background: transparent; }
+  .cell.today { outline: 2px solid #2f9e74; outline-offset: -2px; }
+  .cell .d { font-size: 13px; font-weight: 700; color: #6c7d8e; }
+  .cell .w { position: absolute; top: 8px; right: 9px; font-size: 10px; color: #8d7a5e; }
+  .cell .k { font-size: 17px; font-weight: 800; margin-top: 12px; color: #2c3e50; }
+  .cell .k span { font-size: 10px; font-weight: 600; color: #9aa8b6; margin-left: 2px; }
+  .cell .m { font-size: 10px; color: #9aa8b6; margin-top: 1px; }
+  .bar { position: absolute; left: 9px; right: 9px; bottom: 9px; height: 5px; border-radius: 3px; background: #e6ecf2; overflow: hidden; }
+  .bar i { display: block; height: 100%; border-radius: 3px; }
+  .s-ok { background: #eaf7f0; } .s-ok .k { color: #1f6f52; } .s-ok .bar i { background: #46b98a; }
+  .s-low { background: #eef4fb; } .s-low .k { color: #38699b; } .s-low .bar i { background: #74a6da; }
+  .s-high { background: #fdf5e7; } .s-high .k { color: #a9741a; } .s-high .bar i { background: #e3a63c; }
+  .s-over { background: #fdeeee; } .s-over .k { color: #b23b3b; } .s-over .bar i { background: #e06868; }
+  .s-none .k { color: #b7c2cd; }
+
+  .bottom { display: flex; gap: 16px; margin-top: 20px; align-items: stretch; }
+  .panel { background: #f8fafc; border-radius: 16px; padding: 14px 16px; flex: 1; }
+  .panel h4 { font-size: 12px; color: #8494a4; font-weight: 600; margin-bottom: 8px; letter-spacing: 0.4px; }
+  .wline { display: flex; align-items: baseline; gap: 8px; }
+  .wline .big { font-size: 24px; font-weight: 800; color: #2c3e50; }
+  .wline .unit { font-size: 12px; color: #9aa8b6; }
+  .delta-down { color: #2f9e74; font-weight: 700; font-size: 13px; }
+  .delta-up { color: #d06060; font-weight: 700; font-size: 13px; }
+  .delta-flat { color: #9aa8b6; font-weight: 700; font-size: 13px; }
+  .prog { margin-top: 10px; }
+  .prog .track { height: 8px; border-radius: 4px; background: #e6ecf2; overflow: hidden; }
+  .prog .track i { display: block; height: 100%; background: linear-gradient(90deg, #56c596, #2f9e74); }
+  .prog .meta { display: flex; justify-content: space-between; font-size: 11px; color: #98a6b5; margin-top: 6px; }
+
+  .legend { display: flex; gap: 14px; margin-top: 14px; font-size: 11px; color: #90a0b0; align-items: center; }
+  .legend i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; vertical-align: 1px; }
+  .foot { margin-top: 14px; font-size: 11px; color: #a8b4c0; display: flex; justify-content: space-between; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="head">
+    <div class="title">
+      {{ month_label }} · 饮食日历
+      <small>{{ user_name }}{% if user_name %} · {% endif %}{{ goal_label }}计划 · 每日目标 {{ target_kcal|round|int }} kcal</small>
+    </div>
+    <div class="chips">
+      <div class="chip"><div class="num">{{ logged_days }}</div><div class="lbl">记录天数</div></div>
+      <div class="chip"><div class="num">{{ avg_kcal }}</div><div class="lbl">平均 kcal</div></div>
+      <div class="chip"><div class="num {{ 'warn' if on_target_days == 0 else '' }}">{{ on_target_days }}</div><div class="lbl">达标天数</div></div>
+    </div>
+  </div>
+
+  <div class="grid-head">
+    {% for w in weekdays %}<div class="{{ 'we' if loop.index >= 6 else '' }}">周{{ w }}</div>{% endfor %}
+  </div>
+
+  <div class="grid">
+    {% for week in weeks %}
+      {% for cell in week %}
+        {% if cell is none %}
+          <div class="cell empty"></div>
+        {% else %}
+          <div class="cell s-{{ cell.status }}{{ ' today' if cell.is_today else '' }}">
+            <div class="d">{{ cell.day }}</div>
+            {% if cell.weight %}<div class="w">{{ cell.weight }}kg</div>{% endif %}
+            {% if cell.count %}
+              <div class="k">{{ cell.kcal|round|int }}<span>kcal</span></div>
+              <div class="m">{{ cell.count }} 项记录</div>
+              <div class="bar"><i style="width: {{ (cell.kcal / target_kcal * 100) if target_kcal else 0 }}%"></i></div>
+            {% elif cell.future %}
+              <div class="m" style="margin-top:26px;color:#c8d2db;">·</div>
+            {% else %}
+              <div class="m" style="margin-top:26px;">未记录</div>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+  </div>
+
+  <div class="bottom">
+    <div class="panel">
+      <h4>体重变化</h4>
+      {% if weight_start %}
+        <div class="wline">
+          <div class="big">{{ weight_end }}</div><div class="unit">kg</div>
+          {% if weight_delta is not none %}
+            <div class="{{ 'delta-down' if weight_delta < 0 else ('delta-up' if weight_delta > 0 else 'delta-flat') }}">
+              {{ '%+.1f'|format(weight_delta) }} kg
+            </div>
+          {% endif %}
+        </div>
+        <div class="meta" style="font-size:11px;color:#98a6b5;margin-top:4px;">本月首次 {{ weight_start }}kg · 最近 {{ weight_end }}kg</div>
+      {% else %}
+        <div class="m" style="color:#a8b4c0;font-size:12px;margin-top:6px;">本月还没有称重记录</div>
+      {% endif %}
+      {% if has_chart %}
+      <svg width="100%" height="76" viewBox="0 0 560 86" preserveAspectRatio="none" style="margin-top:6px;">
+        <polyline points="{{ polyline }}" fill="none" stroke="#2f9e74" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />
+        {% for p in chart_points %}
+          <circle cx="{{ p.x }}" cy="{{ p.y }}" r="3" fill="#ffffff" stroke="#2f9e74" stroke-width="2" />
+        {% endfor %}
+      </svg>
+      {% endif %}
+    </div>
+
+    <div class="panel">
+      <h4>目标进度</h4>
+      {% if progress_current and progress_target %}
+        <div class="wline">
+          <div class="big">{{ progress_current }}</div><div class="unit">kg</div>
+          <div class="delta-flat">/ {{ progress_target }} kg</div>
+        </div>
+        <div class="prog">
+          <div class="track"><i style="width: {{ progress_pct if progress_pct is not none else 0 }}%"></i></div>
+          <div class="meta"><span>已完成 {{ progress_pct if progress_pct is not none else 0 }}%</span><span>目标 {{ progress_target }}kg</span></div>
+        </div>
+      {% else %}
+        <div class="m" style="color:#a8b4c0;font-size:12px;margin-top:6px;">设定目标体重后这里会显示进度</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><i style="background:#46b98a"></i>达标</span>
+    <span><i style="background:#74a6da"></i>偏少</span>
+    <span><i style="background:#e3a63c"></i>偏高</span>
+    <span><i style="background:#e06868"></i>超标</span>
+    <span><i style="background:#e6ecf2"></i>未记录</span>
+  </div>
+  <div class="foot">
+    <span>每格显示当日总热量与记录条数，右上角为当天体重</span>
+    <span>生成于 {{ today }}</span>
+  </div>
+</div>
+</body>
+</html>

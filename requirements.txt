@@ -1,0 +1,4 @@
+# 运行时依赖说明
+# aiohttp / jinja2 / pydantic / playwright 等都由 AstrBot 核心自带，无需在这里重复声明。
+# tzdata：部分精简 Linux 或 Windows 环境没有系统时区库，装上更稳（插件内部也有 UTC+8 回退）。
+tzdata>=2024.1

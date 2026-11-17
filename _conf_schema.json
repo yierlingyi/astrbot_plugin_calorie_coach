@@ -1,0 +1,80 @@
+{
+  "enable": {
+    "description": "启用热量管家",
+    "type": "bool",
+    "default": true,
+    "hint": "关闭后不再记录、不注入对话、不推送，但历史数据保留。"
+  },
+  "passive_hint": {
+    "description": "对话里顺口提醒",
+    "type": "bool",
+    "default": true,
+    "hint": "当热量超标或关键营养缺口较大时，在回复末尾补一句提醒（同一用户 4 小时内最多一次）。"
+  },
+  "calendar_image": {
+    "description": "日历输出图片",
+    "type": "bool",
+    "default": true,
+    "hint": "关闭后 /饮食日历 只输出文字版。图片依赖 AstrBot 的 html_render（需安装渲染依赖）。"
+  },
+  "morning_push": {
+    "description": "每日早晨推送今日目标",
+    "type": "bool",
+    "default": true,
+    "hint": "只推送给和机器人聊过天的会话。"
+  },
+  "morning_time": {
+    "description": "早晨推送时间",
+    "type": "string",
+    "default": "08:00",
+    "hint": "24 小时制 HH:MM。"
+  },
+  "evening_push": {
+    "description": "每晚推送当日总结",
+    "type": "bool",
+    "default": true,
+    "hint": "包含当天热量完成度、营养缺口与补餐建议。"
+  },
+  "evening_time": {
+    "description": "晚间推送时间",
+    "type": "string",
+    "default": "21:00"
+  },
+  "weekly_push": {
+    "description": "每周推送小结",
+    "type": "bool",
+    "default": true
+  },
+  "weekly_day": {
+    "description": "周报在周几推送",
+    "type": "int",
+    "default": 7,
+    "slider": { "min": 1, "max": 7, "step": 1 },
+    "hint": "1=周一 … 7=周日。"
+  },
+  "weekly_time": {
+    "description": "周报推送时间",
+    "type": "string",
+    "default": "20:00"
+  },
+  "timezone": {
+    "description": "时区",
+    "type": "string",
+    "default": "Asia/Shanghai",
+    "hint": "留空则使用 AstrBot 全局配置的 timezone。"
+  },
+  "extra_prompt": {
+    "description": "附加给 AI 的额外要求",
+    "type": "text",
+    "default": "",
+    "hint": "会追加到每次对话的角色要求里，例如「称呼我为老板」「语气活泼一点」。"
+  },
+  "default_activity": {
+    "description": "新用户默认活动量",
+    "type": "string",
+    "default": "light",
+    "options": ["sedentary", "light", "moderate", "active", "very_active"],
+    "labels": ["久坐", "轻度活动", "中等活动", "高强度", "极高强度"],
+    "hint": "用户没说活动量时先按这个估算，之后可在对话里修正。"
+  }
+}
