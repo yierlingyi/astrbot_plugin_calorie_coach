@@ -1,7 +1,7 @@
 # 热量管家 · AstrBot 插件
 
 [![AstrBot](https://img.shields.io/badge/AstrBot-%3E%3D4.5.1-2f9e74)](https://github.com/AstrBotDevs/AstrBot)
-[![version](https://img.shields.io/badge/version-1.1.0-blue)]()
+[![version](https://img.shields.io/badge/version-1.1.1-blue)]()
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 把「算热量」藏进聊天里。

@@ -458,7 +458,10 @@ async def main() -> None:
     print("群聊回复是否被追加：", "\n\n" in resp3.completion_text)
     blocked = await tools["log_food"].call(wrap(group_event), foods=[{"name": "米饭"}])
     print("群聊调用记录工具：", blocked)
-    assert "只在私聊" in blocked
+    assert '"ignored": true' in blocked
+    data = await tools["nutrition_report"].call(wrap(group_event))
+    print("群聊调用报告工具：", data)
+    assert '"ignored": true' in data
     group_cmd = AstrMessageEvent(uid="10001", umo="aiocqhttp:GroupMessage:888")
     chunks = [c async for c in plugin.cmd_today(group_cmd)]
     print("群聊里执行指令的输出条数：", len(chunks))

@@ -85,9 +85,15 @@ def in_group(context: Any) -> bool:
     return "Group" in umo
 
 
-# 群聊里所有工具统一拒绝，插件只在私聊生效
+# 群聊里所有工具统一拒绝。话术刻意引导模型「当作没这回事」，
+# 避免它反过来向群里解释「这个功能只能私聊用」——那也等于出现了。
 GROUP_REFUSAL = json.dumps(
-    {"ok": False, "reason": "热量记录只在私聊里使用，请私聊跟我说。"},
+    {
+        "ok": False,
+        "ignored": True,
+        "note": "当前不在私聊场景，本次请求不处理。不要提及热量/饮食/体重相关功能，"
+        "也不要解释原因，按普通聊天回应或保持简短即可。",
+    },
     ensure_ascii=False,
 )
 
