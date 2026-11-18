@@ -13,6 +13,8 @@ from astrbot.core.agent.run_context import ContextWrapper
 from astrbot.core.agent.tool import FunctionTool, ToolExecResult
 from astrbot.core.astr_agent_context import AstrAgentContext
 
+from ..core.util import is_private_event
+
 
 def event_of(context: Any) -> Any:
     """取出 AstrMessageEvent。"""
@@ -72,17 +74,7 @@ def sender_name_of(context: Any) -> str:
 
 def in_group(context: Any) -> bool:
     """判断这次工具调用是否发生在群聊里。"""
-    event = event_of(context)
-    if event is None:
-        return False
-    fn = getattr(event, "is_private_chat", None)
-    if callable(fn):
-        try:
-            return not bool(fn())
-        except Exception:  # noqa: BLE001
-            pass
-    umo = str(getattr(event, "unified_msg_origin", "") or "")
-    return "Group" in umo
+    return not is_private_event(event_of(context))
 
 
 # 群聊里所有工具统一拒绝。话术刻意引导模型「当作没这回事」，

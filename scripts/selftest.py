@@ -144,6 +144,32 @@ def main() -> None:
     store2 = Store(ROOT / "_selftest_data")
     asyncio.run(store2.load())
     print("\n持久化回读：", len(store2.users), len(store2.records.get("u1", {})), store2.latest_weight("u1"), list(store2.user_foods("u1")))
+    # 会话类型判断
+    from types import SimpleNamespace
+    from core.util import is_private_event
+
+    assert is_private_event(None) is True
+    assert is_private_event(SimpleNamespace(unified_msg_origin="aiocqhttp:FriendMessage:1")) is True
+    assert is_private_event(SimpleNamespace(unified_msg_origin="aiocqhttp:GroupMessage:9")) is False
+
+    class _Weird:
+        unified_msg_origin = "webchat:Chat:abc"
+
+        @staticmethod
+        def is_private_chat():
+            return False  # 某些平台把所有会话都标成非好友
+
+    assert is_private_event(_Weird()) is True, "拿不准时应放行，避免插件静默失效"
+
+    class _Grouped:
+        unified_msg_origin = "telegram:TelegramMessage:abc"
+
+        @staticmethod
+        def is_group_chat():
+            return True
+
+    assert is_private_event(_Grouped()) is False
+    print("会话类型判断：OK")
     print("OK")
 
 

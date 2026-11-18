@@ -30,7 +30,7 @@ from .core import report as rp
 from .core.foods import FoodBook
 from .core.service import CoachService
 from .core.store import Store
-from .core.util import MEALS
+from .core.util import MEALS, is_private_event
 from .tools import build_tools
 
 PLUGIN_DIR = Path(__file__).resolve().parent
@@ -148,23 +148,12 @@ class CalorieCoachPlugin(Star):
 
     @staticmethod
     def is_private(event: AstrMessageEvent | None) -> bool:
-        """只认私聊。拿不到会话类型时按私聊处理（语音/WebChat 等本就没有群概念）。"""
-        if event is None:
-            return True
-        fn = getattr(event, "is_private_chat", None)
-        if callable(fn):
-            try:
-                return bool(fn())
-            except Exception:  # noqa: BLE001
-                pass
-        umo = str(getattr(event, "unified_msg_origin", "") or "")
-        if "GroupMessage" in umo or "Group" in umo:
-            return False
-        return True
+        """只认私聊，判定细节见 core.util.is_private_event。"""
+        return is_private_event(event)
 
     @staticmethod
     def _is_group(event: AstrMessageEvent) -> bool:
-        return not CalorieCoachPlugin.is_private(event)
+        return not is_private_event(event)
 
     # ------------------------------------------------------------------ #
     # 注入系统提示词：让 AI 自然知道现状

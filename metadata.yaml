@@ -17,7 +17,7 @@ desc: |
   - 体重管理：只在称重的日子记录，BMI、周变化趋势、目标进度与预计达成时间
   - 饮食日历：每天热量、是否达标、当天体重，文字版与图片版（/饮食日历），每月平均与体重变化
   - 不主动打扰：没有任何定时问候或推送，只有你说话时才回应；回复里只在确有缺口或超标时顺带补一句
-version: 1.1.1
+version: 1.1.2
 author: WorkBuddy
 repo: https://github.com/yierlingyi/astrbot_plugin_calorie_coach
 astrbot_version: ">=4.5.1"

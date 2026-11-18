@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import re
 from datetime import date, datetime, timedelta
+from typing import Any
 
 MEALS: tuple[str, ...] = ("早餐", "午餐", "晚餐", "加餐")
 MEAL_ALIASES: dict[str, str] = {
@@ -143,6 +144,36 @@ def now_str(dt: datetime | None = None) -> str:
 
 def safe_div(a: float, b: float, default: float = 0.0) -> float:
     return a / b if b else default
+
+
+def is_private_event(event: Any) -> bool:
+    """判断是否为私聊。
+
+    判定顺序：
+    1. unified_msg_origin 里带 Group 的一律算群聊（各适配器命名一致）；
+    2. 有 is_group_chat() 就以它为准；
+    3. 有 is_private_chat() 且明确返回 True 才算私聊；
+    4. 其余情况按私聊处理 —— 宁可多认，也不要让插件在某些平台上静默失效。
+    """
+    if event is None:
+        return True
+    umo = str(getattr(event, "unified_msg_origin", "") or "")
+    if "Group" in umo:
+        return False
+    fn = getattr(event, "is_group_chat", None)
+    if callable(fn):
+        try:
+            return not bool(fn())
+        except Exception:  # noqa: BLE001
+            pass
+    fn = getattr(event, "is_private_chat", None)
+    if callable(fn):
+        try:
+            if fn():
+                return True
+        except Exception:  # noqa: BLE001
+            pass
+    return True
 
 
 def truncate(text: str, limit: int = 60) -> str:
