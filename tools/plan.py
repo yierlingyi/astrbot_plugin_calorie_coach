@@ -10,7 +10,7 @@ from astrbot.core.agent.tool import ToolExecResult
 from astrbot.core.astr_agent_context import AstrAgentContext
 
 from ..core import nutrition as nu
-from .base import CoachTool, Field, dataclass, jdump, prop, schema, uid_of
+from .base import CoachTool, Field, dataclass, jdump, prop, schema, uid_of, guard_private
 
 
 @dataclass
@@ -50,6 +50,9 @@ class SaveFoodPresetTool(CoachTool):
     )
 
     async def call(self, context: ContextWrapper[AstrAgentContext], **kwargs) -> ToolExecResult:
+        blocked = guard_private(context)
+        if blocked:
+            return blocked
         svc = self.service
         uid = uid_of(context)
         name = str(kwargs.get("name") or "").strip()
@@ -134,6 +137,9 @@ class SaveRecipeTool(CoachTool):
     )
 
     async def call(self, context: ContextWrapper[AstrAgentContext], **kwargs) -> ToolExecResult:
+        blocked = guard_private(context)
+        if blocked:
+            return blocked
         svc = self.service
         uid = uid_of(context)
         name = str(kwargs.get("name") or "").strip()
@@ -179,6 +185,9 @@ class LogRecipeTool(CoachTool):
     )
 
     async def call(self, context: ContextWrapper[AstrAgentContext], **kwargs) -> ToolExecResult:
+        blocked = guard_private(context)
+        if blocked:
+            return blocked
         svc = self.service
         uid = uid_of(context)
         day = svc.resolve_day(kwargs.get("date"))

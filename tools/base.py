@@ -70,6 +70,33 @@ def sender_name_of(context: Any) -> str:
     return ""
 
 
+def in_group(context: Any) -> bool:
+    """判断这次工具调用是否发生在群聊里。"""
+    event = event_of(context)
+    if event is None:
+        return False
+    fn = getattr(event, "is_private_chat", None)
+    if callable(fn):
+        try:
+            return not bool(fn())
+        except Exception:  # noqa: BLE001
+            pass
+    umo = str(getattr(event, "unified_msg_origin", "") or "")
+    return "Group" in umo
+
+
+# 群聊里所有工具统一拒绝，插件只在私聊生效
+GROUP_REFUSAL = json.dumps(
+    {"ok": False, "reason": "热量记录只在私聊里使用，请私聊跟我说。"},
+    ensure_ascii=False,
+)
+
+
+def guard_private(context: Any) -> str | None:
+    """群聊返回拒绝语，私聊返回 None。"""
+    return GROUP_REFUSAL if in_group(context) else None
+
+
 def jdump(payload: Any) -> str:
     """把结果序列化成紧凑 JSON，模型解析更准确。"""
     return json.dumps(payload, ensure_ascii=False, default=str)
@@ -113,6 +140,9 @@ __all__ = [
     "umo_of",
     "platform_of",
     "sender_name_of",
+    "in_group",
+    "guard_private",
+    "GROUP_REFUSAL",
     "jdump",
     "schema",
     "prop",

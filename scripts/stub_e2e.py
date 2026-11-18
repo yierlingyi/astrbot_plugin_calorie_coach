@@ -251,9 +251,6 @@ async def main() -> None:
         "timezone": "Asia/Shanghai",
         "passive_hint": True,
         "calendar_image": True,
-        "morning_push": False,
-        "evening_push": False,
-        "weekly_push": False,
     }
     plugin = plugin_main.CalorieCoachPlugin(star_ctx, config)
     await plugin.initialize()
@@ -440,10 +437,8 @@ async def main() -> None:
     async for chunk in plugin.cmd_quick_log(event3):
         print(f"[cmd_quick_log] {chunk}")
 
-    # --- 16. 推送 ---
-    print("\n=== 每日推送文本 ===")
-    print(plugin._daily_text(event._uid, "morning"))
-    print(plugin._daily_text(event._uid, "evening"))
+    # --- 16. 私聊限制：群聊一律不参与 ---
+    print("\n=== 群聊：注入与提醒都应静默 ===")
 
     # --- 16.5 新用户与群聊 ---
     print("\n=== 新用户首次对话（应引导建档） ===")
@@ -454,14 +449,20 @@ async def main() -> None:
     status_new = await tools["calorie_status"].call(wrap(new_event))
     print("新用户状态：", status_new[:220])
 
-    print("\n=== 群聊（应有隐私约束、不追加提醒） ===")
     group_event = AstrMessageEvent(uid="10001", umo="aiocqhttp:GroupMessage:888")
     req3 = ProviderRequest()
     await plugin.inject_status(group_event, req3)
-    print("含群聊注意：", "群聊注意" in req3.system_prompt)
+    print("群聊是否注入状态：", bool(req3.system_prompt))
     resp3 = LLMResponse("好的")
     await plugin.append_hint(group_event, resp3)
     print("群聊回复是否被追加：", "\n\n" in resp3.completion_text)
+    blocked = await tools["log_food"].call(wrap(group_event), foods=[{"name": "米饭"}])
+    print("群聊调用记录工具：", blocked)
+    assert "只在私聊" in blocked
+    group_cmd = AstrMessageEvent(uid="10001", umo="aiocqhttp:GroupMessage:888")
+    chunks = [c async for c in plugin.cmd_today(group_cmd)]
+    print("群聊里执行指令的输出条数：", len(chunks))
+    assert len(chunks) == 0
 
     print("\n=== 暂停记录 ===")
     print((await tools["update_profile"].call(ctx, paused=True))[:160])
@@ -479,6 +480,7 @@ async def main() -> None:
     print("\n=== 数据文件 ===")
     for f in sorted(data_dir.glob("*.json")):
         print(f"{f.name}: {f.stat().st_size} bytes")
+    assert not (data_dir / "meta.json").exists(), "不应再生成订阅文件"
 
     ok = True
     import json

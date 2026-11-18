@@ -11,7 +11,7 @@ from astrbot.core.astr_agent_context import AstrAgentContext
 
 from ..core import nutrition as nu
 from ..core.report import brief
-from .base import CoachTool, Field, dataclass, jdump, prop, schema, uid_of
+from .base import CoachTool, Field, dataclass, jdump, prop, schema, uid_of, guard_private
 
 FOOD_ITEM = {
     "type": "object",
@@ -54,6 +54,9 @@ class LogFoodTool(CoachTool):
     )
 
     async def call(self, context: ContextWrapper[AstrAgentContext], **kwargs) -> ToolExecResult:
+        blocked = guard_private(context)
+        if blocked:
+            return blocked
         svc = self.service
         uid = uid_of(context)
         foods = kwargs.get("foods") or []
@@ -175,6 +178,9 @@ class LogEstimatedFoodTool(CoachTool):
     )
 
     async def call(self, context: ContextWrapper[AstrAgentContext], **kwargs) -> ToolExecResult:
+        blocked = guard_private(context)
+        if blocked:
+            return blocked
         svc = self.service
         uid = uid_of(context)
         day = svc.resolve_day(kwargs.get("date"))
@@ -254,6 +260,9 @@ class LookupFoodTool(CoachTool):
     )
 
     async def call(self, context: ContextWrapper[AstrAgentContext], **kwargs) -> ToolExecResult:
+        blocked = guard_private(context)
+        if blocked:
+            return blocked
         svc = self.service
         uid = uid_of(context)
         query = str(kwargs.get("query") or "").strip()
@@ -286,6 +295,9 @@ class RemoveFoodTool(CoachTool):
     )
 
     async def call(self, context: ContextWrapper[AstrAgentContext], **kwargs) -> ToolExecResult:
+        blocked = guard_private(context)
+        if blocked:
+            return blocked
         svc = self.service
         uid = uid_of(context)
         day = svc.resolve_day(kwargs.get("date"))
@@ -331,6 +343,9 @@ class LogWaterTool(CoachTool):
     )
 
     async def call(self, context: ContextWrapper[AstrAgentContext], **kwargs) -> ToolExecResult:
+        blocked = guard_private(context)
+        if blocked:
+            return blocked
         svc = self.service
         uid = uid_of(context)
         try:
@@ -361,6 +376,9 @@ class LogExerciseTool(CoachTool):
     )
 
     async def call(self, context: ContextWrapper[AstrAgentContext], **kwargs) -> ToolExecResult:
+        blocked = guard_private(context)
+        if blocked:
+            return blocked
         svc = self.service
         uid = uid_of(context)
         try:

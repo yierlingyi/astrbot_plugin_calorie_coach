@@ -10,7 +10,7 @@ from astrbot.core.agent.tool import ToolExecResult
 from astrbot.core.astr_agent_context import AstrAgentContext
 
 from ..core import body as bd
-from .base import CoachTool, Field, dataclass, jdump, prop, schema, uid_of
+from .base import CoachTool, Field, dataclass, jdump, prop, schema, uid_of, guard_private
 
 
 @dataclass
@@ -28,6 +28,9 @@ class GetStatusTool(CoachTool):
     )
 
     async def call(self, context: ContextWrapper[AstrAgentContext], **kwargs) -> ToolExecResult:
+        blocked = guard_private(context)
+        if blocked:
+            return blocked
         svc = self.service
         uid = uid_of(context)
         day = svc.resolve_day(kwargs.get("date"))
@@ -134,6 +137,9 @@ class UpdateProfileTool(CoachTool):
     )
 
     async def call(self, context: ContextWrapper[AstrAgentContext], **kwargs) -> ToolExecResult:
+        blocked = guard_private(context)
+        if blocked:
+            return blocked
         svc = self.service
         uid = uid_of(context)
         fields = {k: v for k, v in kwargs.items() if v not in (None, "", [])}
@@ -204,6 +210,9 @@ class RecordWeightTool(CoachTool):
     )
 
     async def call(self, context: ContextWrapper[AstrAgentContext], **kwargs) -> ToolExecResult:
+        blocked = guard_private(context)
+        if blocked:
+            return blocked
         svc = self.service
         uid = uid_of(context)
         try:

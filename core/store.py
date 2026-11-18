@@ -33,15 +33,12 @@ class Store:
             "records": self.dir / "records.json",
             "weights": self.dir / "weights.json",
             "presets": self.dir / "presets.json",
-            "meta": self.dir / "meta.json",
         }
         self.users: dict[str, dict[str, Any]] = {}
         self.records: dict[str, dict[str, dict[str, Any]]] = {}
         self.weights: dict[str, list[dict[str, Any]]] = {}
         self.preset_foods: dict[str, dict[str, dict[str, Any]]] = {}
         self.preset_recipes: dict[str, dict[str, dict[str, Any]]] = {}
-        self.subs: dict[str, dict[str, Any]] = {}
-        self.stats: dict[str, Any] = {}
 
     # ------------------------------------------------------------------ #
     async def load(self) -> None:
@@ -51,9 +48,6 @@ class Store:
         presets = await self._read("presets", None, {})
         self.preset_foods = presets.get("foods", {})
         self.preset_recipes = presets.get("recipes", {})
-        meta = await self._read("meta", None, {})
-        self.subs = meta.get("subs", {})
-        self.stats = meta.get("stats", {})
 
     async def _read(self, name: str, key: str | None, default: Any) -> Any:
         path = self._files[name]
@@ -71,7 +65,7 @@ class Store:
         return value if isinstance(value, dict) else default
 
     def save(self, *names: str) -> None:
-        """按需落盘，names 为 users/records/weights/presets/meta。
+        """按需落盘，names 为 users/records/weights/presets。
 
         单用户数据量在几百 KB 级，同步写足够快，也避免 async 调用方漏掉 await。
         """
@@ -90,7 +84,7 @@ class Store:
                     "recipes": self.preset_recipes,
                 }
             else:
-                payload = {"version": SCHEMA_VERSION, "subs": self.subs, "stats": self.stats}
+                continue
             try:
                 _atomic_write(self._files[name], payload)
             except OSError as exc:
@@ -234,28 +228,8 @@ class Store:
         return self.user_recipes(uid).pop(name, None) is not None
 
     # ------------------------------------------------------------------ #
-    # 会话订阅（用于定时推送）
-    # ------------------------------------------------------------------ #
-    def touch_sub(self, uid: str, umo: str, platform: str = "", name: str = "") -> dict[str, Any]:
-        sub = self.subs.get(uid) or {"uid": uid, "push": True}
-        sub["umo"] = umo
-        if platform:
-            sub["platform"] = platform
-        if name:
-            sub["name"] = name
-        sub["last_active"] = datetime.now().isoformat(timespec="seconds")
-        self.subs[uid] = sub
-        return sub
-
-    def push_targets(self) -> list[dict[str, Any]]:
-        return [s for s in self.subs.values() if s.get("push", True) and s.get("umo")]
-
-    # ------------------------------------------------------------------ #
-    def stats_of(self, uid: str) -> dict[str, Any]:
-        return self.stats.setdefault(uid, {})
-
     def all_uids(self) -> list[str]:
-        return list(dict.fromkeys([*self.users.keys(), *self.subs.keys()]))
+        return list(self.users.keys())
 
 
 def today_str() -> str:

@@ -139,7 +139,6 @@ def main() -> None:
     store.add_entry("u1", today, entries[0])
     store.add_weight("u1", today, 82.6)
     store.add_user_food("u1", "自制鸡胸沙拉", {"nut": nu.to_dict(nu.zeros()), "portions": [["一份", 250]]})
-    store.touch_sub("u1", "aiocqhttp:FriendMessage:1", "aiocqhttp", "测试")
     store.save()
 
     store2 = Store(ROOT / "_selftest_data")
